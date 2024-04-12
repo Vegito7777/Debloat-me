@@ -310,7 +310,7 @@ $Bloatware = @(
 	"*WindowsMaps*"
 	"*WindowsSoundRecorder*"
 	"*WinZipComputing*"
-            “*Solitaire*”
+            "*Solitaire*"
            "*Xbox.TCUI*"
 	"*XboxApp*"
 	"*XboxGameOverlay*"
