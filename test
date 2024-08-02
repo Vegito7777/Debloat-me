@@ -213,6 +213,22 @@ If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds")) {
 }
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "AllowBuildPreview" -Type DWord -Value 0
 
+Get-AppxPackage *copilot* | Remove-AppxPackage 
+Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*copilot*' } | Remove-AppxPackage
+
+Get-AppxPackage *clipchamp* | Remove-AppxPackage
+Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*clipchamp*' } | Remove-AppxPackage
+
+Get-appxpackage *Microsoft.ToDo* | Remove-AppxPackage
+Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*Microsoft.ToDo*' } | Remove-AppxPackage
+
+Get-AppxPackage -AllUsers | Where-Object {$_.Name -Like '*OutlookForWindows*'} | Remove-AppxPackage
+
+Get-AppxPackage Microsoft.ZuneVideo | Remove-AppxPackage
+
+Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like 'Microsoft.ZuneVideo' } | Remove-AppxPackage
+
+
 $Bloatware = @(
     "Microsoft.3DBuilder", "Microsoft.Microsoft3DViewer", "Microsoft.AppConnector",
     "Microsoft.BingFinance", "Microsoft.BingNews", "Microsoft.BingSports",
@@ -221,23 +237,28 @@ $Bloatware = @(
     "Microsoft.Getstarted", "Microsoft.Messaging", "Microsoft.Microsoft3DViewer",
     "Microsoft.MicrosoftSolitaireCollection", "Microsoft.NetworkSpeedTest", "Microsoft.Office.Lens",
     "Microsoft.Office.Sway", "Microsoft.Office.OneNote", "Microsoft.OneConnect",
-    "Microsoft.People", "Microsoft.Print3D", "Microsoft.SkypeApp",
+   "Microsoft.Print3D", "Microsoft.SkypeApp",
     "Microsoft.Wallet", "Microsoft.WindowsAlarms", "Microsoft.windowscommunicationsapps",
     "Microsoft.WindowsFeedbackHub", "Microsoft.WindowsMaps", "Microsoft.WindowsPhone",
     "Microsoft.ConnectivityStore", "Microsoft.CommsPhone", "Microsoft.ScreenSketch",
     "Microsoft.ZuneMusic", "Microsoft.ZuneVideo", "Microsoft.YourPhone",
     "Microsoft.Getstarted", "Microsoft.MicrosoftOfficeHub", "*EclipseManager*",
     "*ActiproSoftwareLLC*", "*AdobeSystemsIncorporated.AdobePhotoshopExpress*",
-    "*Duolingo-LearnLanguagesforFree*", "*PandoraMediaInc*", "*CandyCrush*",
+    "*Duolingo-LearnLanguagesforFree*", "*PandoraMediaInc*","*Spotify*", "*CandyCrush*",
     "*BubbleWitch3Saga*", "*Wunderlist*", "*Flipboard*", "*Twitter*",
     "*Facebook*", "*Royal Revolt*", "*Sway*", "*Speed Test*", "*Dolby*",
     "*Viber*", "*ACGMediaPlayer*", "*Netflix*", "*OneCalendar*",
     "*LinkedInforWindows*", "*HiddenCityMysteryofShadows*", "*Hulu*",
     "*HiddenCity*", "*AdobePhotoshopExpress*", "*HotspotShieldFreeVPN*",
     "*Microsoft.Advertising.Xaml*", "MicrosoftTeams*", "Microsoft.OneDriveSync",
-    "Microsoft.Todos", "Microsoft.549981C3F5F10_8wekyb3d8bbwe", "Microsoft.Windows.PeopleExperienceHost"
+    "Microsoft.Todos", "Microsoft.549981C3F5F10_8wekyb3d8bbwe"
 )
 
+# Uninstall Bloatware-Apps
+foreach ($Bloat in $Bloatware) {
+    Get-AppxPackage -Name $Bloat| Remove-AppxPackage
+    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
+}
 
 # Remove Temp Files
 Remove-Item "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
@@ -261,40 +282,33 @@ if (Test-Path $prefetchPath) {
     Write-Output "Prefetch folder does not exist."
 }
 
+# Define the function to call SHEmptyRecycleBin from shell32.dll
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
 
-# Uninstall Bloatware-Apps
-foreach ($Bloat in $Bloatware) {
-    Get-AppxPackage -Name $Bloat| Remove-AppxPackage
-    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
+public class RecycleBin
+{
+    [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+    public static extern int SHEmptyRecycleBin(IntPtr hwnd, string pszRootPath, uint dwFlags);
+}
+"@
+
+# Define flags for the SHEmptyRecycleBin function
+$SHERB_NOSOUND = 0x00000001
+$SHERB_NOPROGRESSUI = 0x00000002
+$SHERB_NODIALOG = 0x00000004
+
+# Call SHEmptyRecycleBin to empty the Recycle Bin
+$result = [RecycleBin]::SHEmptyRecycleBin([IntPtr]::Zero, $null, $SHERB_NOSOUND -bor $SHERB_NOPROGRESSUI -bor $SHERB_NODIALOG)
+
+if ($result -eq 0) {
+    Write-Output "Recycle Bin emptied successfully."
+} else {
+    Write-Output "Failed to empty the Recycle Bin. Error code: $result."
 }
 
-    Write-Host "Searching and Removing Package $App for All Users"
-    Get-AppxPackage -Name $App -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue -Verbose
-                            
-    Write-Host "Searching and Removing Package $App for Current User"
-    Get-AppxPackage -Name $App | Remove-AppxPackage -ErrorAction SilentlyContinue -Verbose
-
-    Write-Host "Searching and Removing Package $App for Provision Package"
-    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -Like $App | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue -Verbose
-}
-
-Get-AppxPackage *copilot* | Remove-AppxPackage 
-Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*copilot*' } | Remove-AppxPackage
 
 
-
-Get-AppxPackage *clipchamp* | Remove-AppxPackage
- Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*clipchamp*' } | Remove-AppxPackage
-
-
-Get-appxpackage *Microsoft.ToDo* | Remove-AppxPackage
-Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*Microsoft.ToDo*' } | Remove-AppxPackage
-
-
-Get-AppxPackage -AllUsers | Where-Object {$_.Name -Like '*OutlookForWindows*'} | Remove-AppxPackage
-
-Get-AppxPackage Microsoft.ZuneVideo | Remove-AppxPackage
-
-Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like 'Microsoft.ZuneVideo' } | Remove-AppxPackage
-
+   
 
