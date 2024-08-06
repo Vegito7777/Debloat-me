@@ -269,18 +269,19 @@ $prefetchPath = "C:\Windows\Prefetch"
 
 # Check if the Prefetch folder exists
 if (Test-Path $prefetchPath) {
-    # Get all files in the Prefetch folder
-    $prefetchFiles = Get-ChildItem -Path $prefetchPath
+    # Get all files in the Prefetch folder, including hidden and system files
+    $prefetchFiles = Get-ChildItem -Path $prefetchPath -Force
 
-    # Delete each file
+    # Delete each file without confirmation prompt
     foreach ($file in $prefetchFiles) {
-        Remove-Item -Path $file.FullName -Force
+        Remove-Item -Path $file.FullName -Force -Recurse -Confirm:$false
     }
 
     Write-Output "Prefetch files deleted successfully."
 } else {
     Write-Output "Prefetch folder does not exist."
 }
+
 
 # Define the function to call SHEmptyRecycleBin from shell32.dll
 Add-Type @"
