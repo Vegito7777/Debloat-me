@@ -325,7 +325,15 @@ if ($result -eq 0) {
     Write-Output "Failed to empty the Recycle Bin. Error code: $result."
 }
 
-
+# Removing recycle bin files
+# Set the path to the recycle bin on the C drive
+$Path = 'C' + ':\$Recycle.Bin'
+# Get all items (files and directories) within the recycle bin path, including hidden ones
+Get-ChildItem $Path -Force -Recurse -ErrorAction SilentlyContinue |
+# Remove the items, excluding any files with the .ini extension
+Remove-Item -Recurse -Exclude *.ini -ErrorAction SilentlyContinue
+# Display a success message
+write-Host "All the necessary data removed from recycle bin successfully" -ForegroundColor Green
 
    
 
