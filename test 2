@@ -281,6 +281,7 @@ $Bloatware = @(
 "*Microsoft.XboxGamingOverlay*", "*Microsoft.XboxIdentityProvider*",
 "*Microsoft.XboxSpeechToTextOverlay*", "*Microsoft.YourPhone*"
 
+
 )
 
 # Uninstall Bloatware-Apps
