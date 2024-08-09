@@ -1,0 +1,367 @@
+Function Remove-App-MSI-QN {
+    param([String]$appName)
+
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | 
+                Get-ItemProperty | 
+                Where-Object {$_.DisplayName -eq $appName } | 
+                Select-Object -Property DisplayName,UninstallString
+
+    if($appCheck -ne $null){
+        Write-host "Uninstalling $($appCheck.DisplayName)"
+        $uninst = $appCheck.UninstallString + " /qn /norestart"
+        cmd /c $uninst
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-App-EXE-SILENT {
+    param([String]$appName)
+
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | 
+                Get-ItemProperty | 
+                Where-Object {$_.DisplayName -eq $appName } | 
+                Select-Object -Property DisplayName,UninstallString
+
+    if($appCheck -ne $null){
+        Write-host "Uninstalling $($appCheck.DisplayName)"
+        $uninst = $appCheck.UninstallString + " -silent"
+        cmd /c $uninst
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-App-MSI_EXE-Quiet {
+    param([String]$appName)
+
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | 
+                Get-ItemProperty | 
+                Where-Object {$_.DisplayName -eq $appName } | 
+                Select-Object -Property DisplayName,UninstallString
+
+    if($appCheck -ne $null){
+        Write-host "Uninstalling $($appCheck.DisplayName)"
+        $uninst = $appCheck.UninstallString[1] +  " /qn /restart"
+        cmd /c $uninst
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-App-MSI_EXE-S {
+    param([String]$appName)
+
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | 
+                Get-ItemProperty | 
+                Where-Object {$_.DisplayName -eq $appName } | 
+                Select-Object -Property DisplayName,UninstallString
+
+    if($appCheck -ne $null){
+        Write-host "Uninstalling $($appCheck.DisplayName)"
+        $uninst = $appCheck.UninstallString[1] +  " /S"
+        cmd /c $uninst
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-App-MSI-I-QN {
+    param([String]$appName)
+
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | 
+                Get-ItemProperty | 
+                Where-Object {$_.DisplayName -eq $appName } | 
+                Select-Object -Property DisplayName,UninstallString
+
+    if($appCheck -ne $null){
+        Write-host "Uninstalling $($appCheck.DisplayName)"
+        $uninst = $appCheck.UninstallString.Replace("/I","/X") + " /qn /norestart"
+        cmd /c $uninst
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-App {
+    param([String]$appName)
+
+    $app = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $appName }
+
+    if ($app -ne $null) {
+        foreach ($package in $app) {
+            $packageFullName = $package.PackageFullName
+            Write-Host "Uninstalling $appName"
+            Remove-AppxPackage -Package $packageFullName -AllUsers
+
+            # Remove provisioned package
+            $provApp = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $appName }
+            foreach ($proPackage in $provApp) {
+                $proPackageFullName = $proPackage.PackageName
+                if ($proPackageFullName -ne $null) {
+                    Write-Host "Uninstalling provisioned $appName"
+                    Remove-AppxProvisionedPackage -Online -PackageName $proPackageFullName
+                }
+            }
+        }
+    } else {
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-M365 {
+    param([String]$appName)
+
+    $uninstall = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where {$_.DisplayName -like $appName} | Select UninstallString)
+    if($uninstall -ne $null){
+        Write-Host "Uninstalling $appName"
+        $uninstall = $uninstall.UninstallString + " DisplayLevel=False"
+        cmd /c $uninstall
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Check-UninstallString {
+    param([String]$appName)
+
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | 
+                Get-ItemProperty | 
+                Where-Object {$_.DisplayName -eq $appName } | 
+                Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host $appCheck.DisplayName $appCheck.UninstallString
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-App-EXE-S-QUOTES {
+    param([String]$appName)
+
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | 
+                Get-ItemProperty | 
+                Where-Object {$_.DisplayName -eq $appName } | 
+                Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host "Uninstalling $($appCheck.DisplayName)"
+        $uninst = "`"" + $appCheck.UninstallString + "`"" + " /S"
+        cmd /c $uninst
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Remove-App-MSI-QN "Dell SupportAssist"                                             # Working
+Remove-App-MSI-QN "Dell Digital Delivery Services"                                 # Working
+Remove-App-EXE-SILENT "Dell Optimizer Core"                                        # Working
+Remove-App-MSI_EXE-S "Dell SupportAssist OS Recovery Plugin for Dell Update"       # Working
+Remove-App-MSI_EXE-S "Dell SupportAssist Remediation"                              # Working
+Remove-App-EXE-S-QUOTES "Dell Display Manager 2.1"                                 # Working
+Remove-App-EXE-S-QUOTES "Dell Peripheral Manager"                                  # Working
+Remove-App-MSI-I-QN "Dell Core Services"                                           # Working
+Remove-App-MSI-I-QN "Dell Trusted Device Agent"                                    # Working
+Remove-App-MSI-I-QN "Dell Optimizer"                                               # Working
+Remove-App "Microsoft.GamingApp"                                                   # Working
+Remove-App "Microsoft.MicrosoftOfficeHub"                                          # Working
+Remove-App "DellInc.DellDigitalDelivery"                                           # Working 
+Remove-App "Microsoft.GetHelp"                                                     # Working
+Remove-App "Microsoft.Getstarted"                                                  # Working
+Remove-App "Microsoft.Messaging"                                                   # Working
+Remove-App "Microsoft.MicrosoftSolitaireCollection"                                # Working
+Remove-App "Microsoft.OneConnect"                                                  # Working
+Remove-App "Microsoft.SkypeApp"                                                    # Working
+Remove-App "Microsoft.Wallet"                                                      # Working
+Remove-App "microsoft.windowscommunicationsapps"                                   # Working
+Remove-App "Microsoft.WindowsFeedbackHub"                                          # Working
+Remove-App "Microsoft.YourPhone"                                                   # Working
+Remove-App "ZuneMusic"                                                             # Working        
+Remove-M365 "Microsoft 365 - fr-fr"                                                # Working
+Remove-M365 "Microsoft 365 - es-es"                                                # Working                                            
+Remove-M365 "Microsoft 365 - pt-br"                                                # Working
+Remove-M365 "Microsoft OneNote - fr-fr"                                            # Working
+Remove-M365 "Microsoft OneNote - es-es"                                            # Working
+Remove-M365 "Microsoft OneNote - pt-br"                                            # Working
+Check-UninstallString "DELLOSD"
+Remove-App "Microsoft.Xbox.TCUI"    # Working
+Remove-App "Microsoft.XboxApp"   # Working 
+Remove-App "Microsoft.XboxGameOverlay"   # Working
+Remove-App "Microsoft.XboxIdentityProvider"    # Working
+Remove-App "Microsoft.XboxSpeechToTextOverlay"     # Working
+
+Write-Host -ForegroundColor Yellow "Disabling Xbox features..."
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\GameBar" -Name "AutoGameModeEnabled" -Type DWord -Value 0
+Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0
+
+If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR")) {
+    New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" | Out-Null
+}
+
+Write-Host -ForegroundColor Yellow "Setting Control Panel view to small icons..."
+If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel")) {
+    New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" | Out-Null
+}
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" -Name "StartupPage" -Type DWord -Value 1
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" -Name "AllItemsIconView" -Type DWord -Value 1
+
+Write-Host Write-Host -ForegroundColor Yellow  Disabling Windows Preview Builds...
+
+If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds")) {
+	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Force | Out-Null
+}
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "AllowBuildPreview" -Type DWord -Value 0
+
+Get-AppxPackage *copilot* | Remove-AppxPackage 
+Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*copilot*' } | Remove-AppxPackage
+
+Get-AppxPackage *clipchamp* | Remove-AppxPackage
+Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*clipchamp*' } | Remove-AppxPackage
+
+Get-appxpackage *Microsoft.ToDo* | Remove-AppxPackage
+Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like '*Microsoft.ToDo*' } | Remove-AppxPackage
+
+Get-AppxPackage -AllUsers | Where-Object {$_.Name -Like '*OutlookForWindows*'} | Remove-AppxPackage
+
+Get-AppxPackage Microsoft.ZuneVideo | Remove-AppxPackage
+
+Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like 'Microsoft.ZuneVideo' } | Remove-AppxPackage
+
+
+$Bloatware = @(
+"Microsoft.3DBuilder", "Microsoft.Microsoft3DViewer", "Microsoft.AppConnector",
+"Microsoft.BingFinance", "Microsoft.BingNews", "Microsoft.BingSports",
+"Microsoft.BingTranslator", "Microsoft.BingWeather", "Microsoft.BingFoodAndDrink",
+"Microsoft.BingHealthAndFitness", "Microsoft.BingTravel", "Microsoft.GetHelp",
+"Microsoft.Getstarted", "Microsoft.Messaging", "Microsoft.Microsoft3DViewer",
+"Microsoft.MicrosoftSolitaireCollection", "Microsoft.NetworkSpeedTest", "Microsoft.Office.Lens",
+"Microsoft.Office.Sway", "Microsoft.Office.OneNote", "Microsoft.OneConnect",
+"Microsoft.Print3D", "Microsoft.SkypeApp",
+"Microsoft.Wallet", "Microsoft.WindowsAlarms", "Microsoft.windowscommunicationsapps",
+"Microsoft.WindowsFeedbackHub", "Microsoft.WindowsMaps", "Microsoft.WindowsPhone",
+"Microsoft.ConnectivityStore", "Microsoft.CommsPhone", "Microsoft.ScreenSketch",
+"Microsoft.ZuneMusic", "Microsoft.ZuneVideo", "Microsoft.YourPhone",
+"Microsoft.Getstarted", "Microsoft.MicrosoftOfficeHub", "*EclipseManager*",
+"*ActiproSoftwareLLC*", "*AdobeSystemsIncorporated.AdobePhotoshopExpress*",
+"*Duolingo-LearnLanguagesforFree*", "*PandoraMediaInc*", "*Spotify*", "*CandyCrush*",
+"*BubbleWitch3Saga*", "*Wunderlist*", "*Flipboard*", "*Twitter*",
+"*Facebook*", "*Royal Revolt*", "*Sway*", "*Speed Test*", "*Dolby*",
+"*Viber*", "*ACGMediaPlayer*", "*Netflix*", "*OneCalendar*",
+"*LinkedInforWindows*", "*HiddenCityMysteryofShadows*", "*Hulu*",
+"*HiddenCity*", "*AdobePhotoshopExpress*", "*HotspotShieldFreeVPN*",
+"*Microsoft.Advertising.Xaml*", "*MicrosoftTeams*", "*Microsoft.Todos*",
+"*Microsoft.549981C3F5F10_8wekyb3d8bbwe*", "*Clipchamp.Clipchamp*",
+"*HULULLC.HULUPLUS*", "*Microsoft.Asphalt8Airborne*", "*Microsoft.BingFinance*",
+"*Microsoft.BingNews*", "*Microsoft.BingSports*", "*Microsoft.BingTranslator*",
+"*Microsoft.BingWeather*", "*Microsoft.GetHelp*", "*Microsoft.Getstarted*",
+"*Microsoft.Messaging*", "*Microsoft.Microsoft3DViewer*",
+"*Microsoft.MicrosoftOfficeHub*", "*Microsoft.MicrosoftSolitaireCollection*",
+"*Microsoft.MicrosoftStickyNotes*", "*Microsoft.MixedReality.Portal*",
+"*Microsoft.NetworkSpeedTest*", "*Microsoft.News*", "*Microsoft.Office.OneNote*",
+"*Microsoft.Office.Sway*", "*Microsoft.OneConnect*", "*Microsoft.Print3D*",
+"*Microsoft.RemoteDesktop*", "*Microsoft.SkypeApp*", "*Microsoft.Todos*",
+"*Microsoft.WindowsAlarms*", "*Microsoft.WindowsFeedbackHub*",
+"*Microsoft.WindowsMaps*", "*Microsoft.WindowsSoundRecorder*",
+"*Microsoft.ZuneMusic*", "*Microsoft.ZuneVideo*",
+"*PandoraMediaInc*", "*PICSART-PHOTOSTUDIO*", "*Royal Revolt*",
+"*Speed Test*", "*Spotify*", "*Twitter*", "*Wunderlist*",
+"*king.com.BubbleWitch3Saga*", "*king.com.CandyCrushSaga*",
+"*king.com.CandyCrushSodaSaga*", "*Microsoft.GamingApp*",
+"*Microsoft.MSPaint*", "*Microsoft.People*", "*Microsoft.PowerAutomateDesktop*",
+"*Microsoft.ScreenSketch*", "*Microsoft.Windows.Photos*",
+"*Microsoft.WindowsCalculator*", "*Microsoft.WindowsCamera*",
+"*Microsoft.Xbox.TCUI*", "*Microsoft.XboxApp*", "*Microsoft.XboxGameOverlay*",
+"*Microsoft.XboxGamingOverlay*", "*Microsoft.XboxIdentityProvider*",
+"*Microsoft.XboxSpeechToTextOverlay*", "*Microsoft.YourPhone*"
+
+)
+
+# Uninstall Bloatware-Apps
+foreach ($Bloat in $Bloatware) {
+    Get-AppxPackage -Name $Bloat| Remove-AppxPackage
+    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
+}
+
+# Remove Temp Files
+Remove-Item "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item $env:TEMP\* -Recurse -Force -ErrorAction SilentlyContinue
+
+# Define the path to the Prefetch folder
+$prefetchPath = "C:\Windows\Prefetch"
+
+# Check if the Prefetch folder exists
+if (Test-Path $prefetchPath) {
+    # Get all files in the Prefetch folder, including hidden and system files
+    $prefetchFiles = Get-ChildItem -Path $prefetchPath -Force
+
+    # Delete each file without confirmation prompt
+    foreach ($file in $prefetchFiles) {
+        Remove-Item -Path $file.FullName -Force -Recurse -Confirm:$false
+    }
+
+    Write-Output "Prefetch files deleted successfully."
+} else {
+    Write-Output "Prefetch folder does not exist."
+}
+
+## Deletes all files and folders in user's Temp folder.
+Get-ChildItem "C:\users\*\AppData\Local\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue |
+Remove-Item -Force -Verbose -Recurse -ErrorAction SilentlyContinue
+## The contents of C:\users\$env:USERNAME\AppData\Local\Temp\ have been removed successfully!
+                  
+## Remove all files and folders in user's Temporary Internet Files.
+Get-ChildItem "C:\users\*\AppData\Local\Microsoft\Windows\Temporary Internet Files\*" `
+-Recurse -Force -Verbose -ErrorAction SilentlyContinue |
+Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+## All Temporary Internet Files have been removed successfully!
+                  
+## Cleans IIS Logs if applicable.
+Get-ChildItem "C:\inetpub\logs\LogFiles\*" -Recurse -Force -ErrorAction SilentlyContinue |
+Remove-Item -Force -Verbose -Recurse -ErrorAction SilentlyContinue
+## All IIS Logfiles have been removed Successfully!
+
+
+# Define the function to call SHEmptyRecycleBin from shell32.dll
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public class RecycleBin
+{
+    [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+    public static extern int SHEmptyRecycleBin(IntPtr hwnd, string pszRootPath, uint dwFlags);
+}
+"@
+
+# Define flags for the SHEmptyRecycleBin function
+$SHERB_NOSOUND = 0x00000001
+$SHERB_NOPROGRESSUI = 0x00000002
+$SHERB_NODIALOG = 0x00000004
+
+# Call SHEmptyRecycleBin to empty the Recycle Bin
+$result = [RecycleBin]::SHEmptyRecycleBin([IntPtr]::Zero, $null, $SHERB_NOSOUND -bor $SHERB_NOPROGRESSUI -bor $SHERB_NODIALOG)
+
+if ($result -eq 0) {
+    Write-Output "Recycle Bin emptied successfully."
+} else {
+    Write-Output "Failed to empty the Recycle Bin. Error code: $result."
+}
+
+# Removing recycle bin files
+# Set the path to the recycle bin on the C drive
+$Path = 'C' + ':\$Recycle.Bin'
+# Get all items (files and directories) within the recycle bin path, including hidden ones
+Get-ChildItem $Path -Force -Recurse -ErrorAction SilentlyContinue |
+# Remove the items, excluding any files with the .ini extension
+Remove-Item -Recurse -Exclude *.ini -ErrorAction SilentlyContinue
+# Display a success message
+write-Host "All the necessary data removed from recycle bin successfully" -ForegroundColor Green
+
+   
