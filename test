@@ -282,6 +282,22 @@ if (Test-Path $prefetchPath) {
     Write-Output "Prefetch folder does not exist."
 }
 
+## Deletes all files and folders in user's Temp folder.
+Get-ChildItem "C:\users\*\AppData\Local\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue |
+Remove-Item -Force -Verbose -Recurse -ErrorAction SilentlyContinue
+## The contents of C:\users\$env:USERNAME\AppData\Local\Temp\ have been removed successfully!
+                  
+## Remove all files and folders in user's Temporary Internet Files.
+Get-ChildItem "C:\users\*\AppData\Local\Microsoft\Windows\Temporary Internet Files\*" `
+-Recurse -Force -Verbose -ErrorAction SilentlyContinue |
+Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+## All Temporary Internet Files have been removed successfully!
+                  
+## Cleans IIS Logs if applicable.
+Get-ChildItem "C:\inetpub\logs\LogFiles\*" -Recurse -Force -ErrorAction SilentlyContinue |
+Remove-Item -Force -Verbose -Recurse -ErrorAction SilentlyContinue
+## All IIS Logfiles have been removed Successfully!
+
 
 # Define the function to call SHEmptyRecycleBin from shell32.dll
 Add-Type @"
