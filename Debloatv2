@@ -360,6 +360,10 @@ Get-AppxPackage Microsoft.ZuneVideo | Remove-AppxPackage
 
 Get-AppxPackage -AllUsers | Where-Object { $_.Name -Like 'Microsoft.ZuneVideo' } | Remove-AppxPackage
 
+Get-Appxpackage Microsoft.YourPhone -AllUsers | Remove-Appxpackage
+
+ Get-AppxPackage Microsoft.XboxGamingOverlay | Remove-AppxPackage 
+
 Write-Host "Waiting for Jobs to Complete"
 
 function Invoke-PreinstallChecks {
